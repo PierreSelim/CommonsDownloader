@@ -9,21 +9,21 @@ import argparse
 from thumbnaildownload import download_file
 
 
-def get_file_names_from_textfile(textfile_handler):
+def get_file_names_from_textfile(textfile_handler, separator):
     """Yield the file names and widths by parsing a given text fileahandler."""
     for line in textfile_handler:
         line = line.rstrip()
         try:
-            (image_name, width) = line.split(',')
+            (image_name, width) = line.split(separator)
         except ValueError:
             image_name = line
             width = None
         yield (image_name, width)
 
 
-def download_from_file_list(file_list, output_path):
+def download_with_file_list(file_list, output_path, separator):
     """Download files from a given textfile list."""
-    for (file_name, width) in get_file_names_from_textfile(file_list):
+    for (file_name, width) in get_file_names_from_textfile(file_list, separator):
         download_file(file_name, output_path, width=width)
 
 
@@ -59,6 +59,11 @@ def main():
                         dest="file_list",
                         type=argparse.FileType('r'),
                         help='A list of files <filename,width>')
+    parser.add_argument("-s", "--seperator",
+                        dest="seperator",
+                        type=str,
+                        default=',',
+                        help='Separator for file list (default: ",")')
     parser.add_argument("-o", "--output", metavar="FOLDER",
                         dest="output_path",
                         action=Folder,
@@ -82,7 +87,7 @@ def main():
     logging.info("Starting")
 
     if args.file_list:
-        download_from_file_list(args.file_list, args.output_path)
+        download_with_file_list(args.file_list, args.output_path, args.separator)
     elif args.files:
         download_from_files(args.files, args.output_path, args.width)
     else:
